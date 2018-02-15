@@ -1,0 +1,47 @@
+{
+  "name": "snapy-node-report",
+  "description": "Asks about the snapshots and offers a error explorer for the terminal",
+  "version": "0.0.0",
+  "homepage": "https://github.com/snapyjs/",
+  "author": {
+    "name": "Paul Pflugradt",
+    "email": "paul.pflugradt@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/snapyjs/snapy-node-report"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "main": "lib/server.js",
+  "files": [
+    "lib/*.js",
+    "shrinkwrap.yaml"
+  ],
+  "dependencies": {
+    "abbreviate": "^0.0.3",
+    "chalk": "^2.3.1",
+    "emphasize": "^1.5.0",
+    "keypress": "^0.2.1"
+  },
+  "devDependencies": {
+    "coffee-cli": "^0.2.1",
+    "coffee-loader": "^0.9.0",
+    "script-runner": "^0.1.7",
+    "snapy": "^0.1.0"
+  },
+  "keywords": [],
+  "readmeFilename": "README.md",
+  "scripts": {
+    "build": "run-npm build:*",
+    "build:server": "coffee-cli --next --bare --no-header --compile --output lib/ src/*",
+    "watch": "run-npm watch:*",
+    "watch:server": "coffee-cli --next --watch --bare --no-header --compile --output lib/ src/*",
+    "test": "snapy",
+    "preversion": "npm test",
+    "version": "npm run build && git add .",
+    "postversion": "git push && git push --tags && npm publish"
+  }
+}

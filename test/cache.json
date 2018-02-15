@@ -1,0 +1,1 @@
+{"chunks":{"set":true,"value":{"test.coffee":"10728abdceb1cc426b4490c04cf799b1"}},"d1ba3da95a40a180392cceef57be813d0":{"set":true,"value":{"key":"someKey","question":"Press Enter","description":"Press Enter","snapLine":8,"snapSource":"console.log('Press Enter')\nconsole.log('do it!')","file":"./test/test.coffee"}},"9e6e1f6dd2ad57961a98bbdbe66567310":{"set":true,"value":"test"}}
