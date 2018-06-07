@@ -5,7 +5,7 @@ console.log "outside of test1"
 test (snap) =>
   # test1
   # test11
-  snap promise: ask {
+  snap plain: true, promise: ask {
     key:"someKey"
     question: "Press Enter"
     description: "Press Enter"
