@@ -12,7 +12,7 @@ module.exports = ({run,success,fail,std,cache,position,status,cancel, chalk,ask,
   fail.hookIn (obj) => failedTests.push obj
   std.hookIn (obj) => output[obj.origin] = obj
 
-  {printQuestion, closeQuestionInterface} = require("./printQuestion")(status,Promise)
+  {printQuestion, closeQuestionInterface} = require("./printQuestion")(status,Promise, cancel)
   ask.hookIn printQuestion
   run.hookIn position.end, closeQuestionInterface
 
@@ -22,7 +22,10 @@ module.exports = ({run,success,fail,std,cache,position,status,cancel, chalk,ask,
 
   run.hookIn position.end, ({changedChunks,cachedChunks,stats}, {readConfig,isCanceled}) =>
     unless isCanceled
-      if done.length == stats.due.snaps
+      hasErrors = 0
+      for key,val of output
+        hasErrors += val.stderr?
+      if done.length == stats.due.snaps and not hasErrors
         process.exitCode = 0
         status chalk.green("All #{stats.total.snaps} snap(s) out of #{stats.total.tests} test(s) are valid"), "succeed"
         
@@ -31,12 +34,16 @@ module.exports = ({run,success,fail,std,cache,position,status,cancel, chalk,ask,
         process.exitCode = 1
         uncalled = stats.due.snaps-done.length-failedTests.length
         unchanged = stats.total.snaps-stats.due.snaps
-        failed = "#{done.length} valid, #{failedTests.length} invalid"
+        failed = ""
+        if hasErrors
+          failed += chalk.bold("(#{hasErrors} errors) ")
+        failed += "#{done.length} valid, #{failedTests.length} invalid"
         if uncalled
           failed += ", #{uncalled} not evaluated"
         if unchanged
           failed += ", #{unchanged} skipped (unchanged)"
         failed += " snaps"
+        
         status chalk.red(failed), "fail"
         failedTests = failedTests.sort (o1,o2) =>
           if o1.file != o2.file
