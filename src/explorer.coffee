@@ -28,7 +28,7 @@ getChoice = (arr, cursor, i=0) =>
   index = 0 unless ~(index = arr.findIndex((el) => cursor == el[0])) 
   return arr[(index+i)%%arr.length]?[0]
 
-module.exports = (cache, output, failedTests, Promise, cancel, isWatch) => new Promise (resolve) =>
+module.exports = (cache, output, Promise, cancel, isWatch) => new Promise (resolve) =>
 
   usage = (add = "") =>  
     str = "use arrows or W,A,S,D to navigate"
@@ -48,15 +48,10 @@ module.exports = (cache, output, failedTests, Promise, cancel, isWatch) => new P
 
   {value:selection} = await cache.get key:"selection"
   tests = {}
-  failedTests.forEach (failedTest) =>
+  output.forEach (failedTest) =>
     if failedTest.diff? or failedTest.stderr? or failedTest.stdout?
       failedTest.testId = testId = shortenPath(failedTest.origin,false)
-      
       tests[testId] = failedTest
-
-  for k,v of output
-    k = shortenPath(k,false)
-    tests[k] = Object.assign tests[k] or {}, v, {testId: k}
   
   testToStatesString = (test) =>
     states = test.states = []

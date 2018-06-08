@@ -1,16 +1,20 @@
 {printStd} = require "./printError"
 explore = require "./explorer"
 
-module.exports = ({run,success,fail,std,cache,position,status,cancel, chalk,ask,Promise}) =>
-  done = []
-  failedTests = []
-  output = {}
+module.exports = ({run,cache,report,position,status,cancel, chalk,ask,Promise}) =>
+  output = []
+  done = failed = hasErrors = 0
   run.hookIn position.init, => 
-    done = []
-    failedTests = []
-  success.hookIn (obj) => done.push obj
-  fail.hookIn (obj) => failedTests.push obj
-  std.hookIn (obj) => output[obj.origin] = obj
+    output = []
+    done = failed = hasErrors = 0
+    
+  report.hookIn (obj) => 
+    return done++ if obj.success == true
+    output.push obj
+    hasErrors += obj.stderr?
+    failed += obj.snapLine?
+    
+    
 
   {printQuestion, closeQuestionInterface} = require("./printQuestion")(status,Promise, cancel)
   ask.hookIn printQuestion
@@ -22,41 +26,33 @@ module.exports = ({run,success,fail,std,cache,position,status,cancel, chalk,ask,
 
   run.hookIn position.end, ({changedChunks,cachedChunks,stats}, {readConfig,isCanceled}) =>
     unless isCanceled
-      hasErrors = 0
-      for key,val of output
-        hasErrors += val.stderr?
-      if done.length == stats.due.snaps and not hasErrors
+      if done == stats.due.snaps and not hasErrors
         process.exitCode = 0
         status chalk.green("All #{stats.total.snaps} snap(s) out of #{stats.total.tests} test(s) are valid"), "succeed"
-        
         return
       else 
         process.exitCode = 1
-        uncalled = stats.due.snaps-done.length-failedTests.length
+        uncalled = stats.due.snaps-done-failed
         unchanged = stats.total.snaps-stats.due.snaps
-        failed = ""
+        errorMsg = ""
         if hasErrors
-          failed += chalk.bold("(#{hasErrors} errors) ")
-        failed += "#{done.length} valid, #{failedTests.length} invalid"
+          errorMsg += chalk.bold("(#{hasErrors} errors) ")
+        errorMsg += "#{done} valid, #{failed} invalid"
         if uncalled
-          failed += ", #{uncalled} not evaluated"
+          errorMsg += ", #{uncalled} not evaluated"
         if unchanged
-          failed += ", #{unchanged} skipped (unchanged)"
-        failed += " snaps"
+          errorMsg += ", #{unchanged} skipped (unchanged)"
+        errorMsg += " snaps"
         
-        status chalk.red(failed), "fail"
-        failedTests = failedTests.sort (o1,o2) =>
-          if o1.file != o2.file
-            if o1.file < o2.file
-              return -1
-            else
-              return 1
-          else
-            return o1.line - o2.line
+        status chalk.red(errorMsg), "fail"
+        output = output.sort (o1,o2) => 
+          if o1.origin < o2.origin
+            return -1
+          else if o1.origin > o2.origin
+            return 1
+          return 0
         if not process.stdout.isTTY 
-          for error in failedTests
-            printStd(error, "diff")
-          for std in output
-            printStd(std, "stderr")
-        else if failedTests.length > 0 or Object.keys(output).length > 0
-          await explore(cache, output, failedTests, Promise, cancel, readConfig.watch)
+          for out in output
+            printStd(out) if out.stderr or out.diff
+        else if output.length > 0
+          await explore(cache, output, Promise, cancel, readConfig.watch)

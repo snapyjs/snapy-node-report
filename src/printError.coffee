@@ -7,10 +7,9 @@ prependStr = (prep, str) =>
   arr = str.split("\n")
   return prep+arr.join("\n"+prep)
 
-
-getDiff = ({diff}) =>
+diffToArray = (diff) =>
   arr = []
-  if diff?
+  if diff
     for d in diff
       if d.added
         arr.push chalk.blue(prependStr("+ ",d.value.trimRight()))
@@ -34,6 +33,20 @@ getDiff = ({diff}) =>
         arr.push "  "+d.value.trimRight()
   return arr
 
+getType = ({diff,stderr,stdout}) =>
+  if diff?
+    return "diff"
+  else if stderr
+    return "stderr"
+  else if stdout
+    return "stdout"
+
+getArr = (o, type) =>
+  if type == "diff"
+    return diffToArray(o[type])
+  else
+    return o[type]
+
 
 
 newLine = ""
@@ -45,11 +58,9 @@ concat = (arr1,arrs...) =>
     Array.prototype.push.apply(arr1, arr)
   return arr1
 
-stdToOutput = (error, type, header = []) =>
-    if type == "diff"
-      content = getDiff(error)
-    else unless (content = error[type])?
-      return [] 
+stdToOutput = (error, type , header = []) =>
+    type ?= getType(error)
+    content = getArr(error, type)
     source = getSource(error, "test", error.snapLine, if error.snapLine then "snap" else "console.log")
     if source.length > 0
       source = concat [
@@ -70,7 +81,7 @@ stdToOutput = (error, type, header = []) =>
 
 module.exports =
   stdToOutput: stdToOutput
-  printStd: (std, type) => 
-    out = stdToOutput(std,type)
+  printStd: (std) => 
+    out = stdToOutput(std)
     console.log out.join("\n") if out.length > 0
     

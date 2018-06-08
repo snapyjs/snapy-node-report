@@ -17,20 +17,19 @@
   },
   "main": "lib/server.js",
   "files": [
-    "lib/*.js",
-    "shrinkwrap.yaml"
+    "lib/*.js"
   ],
   "dependencies": {
     "abbreviate": "^0.0.3",
-    "chalk": "^2.3.1",
-    "emphasize": "^1.5.0",
+    "chalk": "^2.4.1",
+    "emphasize": "^2.0.0",
     "keypress": "^0.2.1"
   },
   "devDependencies": {
     "coffee-cli": "^0.2.1",
     "coffee-loader": "^0.9.0",
     "script-runner": "^0.1.7",
-    "snapy": "^0.1.0"
+    "snapy": "^0.1.5"
   },
   "keywords": [],
   "readmeFilename": "README.md",

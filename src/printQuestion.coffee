@@ -44,5 +44,6 @@ module.exports = (status, Promise, cancel) =>
           canceler()
           close()
           status null,"start"       
-          obj.correct = answer != "n" and answer != "N"
+          obj.success = answer != "n" and answer != "N"
+          obj.stderr = ["State not correct:",obj.question] unless obj.success
           resolve()
